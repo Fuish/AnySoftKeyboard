@@ -37,6 +37,10 @@ apply plugin: 'com.github.triplet.play'
 apply plugin: 'pmd'
 apply plugin: 'jacoco'
 
+//sourceSets.main {
+//   jni.srcDirs = []
+//}
+
 allprojects {
     repositories {
         jcenter()
@@ -55,6 +59,9 @@ def versionBuilder = VersionBuilder.getVersionBuilder(1, 7, -COUNT_MINOR_NORMALI
 
 version versionBuilder.buildVersionName()
 group 'net.evendanan'
+
+
+
 
 println "Building AnySoftKeyboard " + version + ", version-code "+versionBuilder.buildVersionNumber()
 
@@ -184,47 +191,22 @@ play {
     uploadImages = false
 }
 
-task parseStateAssembly(type: com.anysoftkeyboard.tools.generatewordslist.GenerateWordsListTask) {
-    inputFile new File(project.getProjectDir(), "english_dictionary/NY_STATE_ASSEMBLY_TRANSCRIPT_20120621.txt")
-    outputWordsListFile new File(project.getProjectDir(), "english_dictionary/words_ny_state_assembly.xml")
+task parseMedical(type: com.anysoftkeyboard.tools.generatewordslist.GenerateWordsListTask) {
+    inputFile new File(project.getProjectDir(), "english_dictionary/Medical_All.txt")
+    outputWordsListFile new File(project.getProjectDir(), "english_dictionary/Medical_All.xml")
+    wordCharacters "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray()
+    additionalInnerCharacters "'".toCharArray()
+    locale Locale.US
 }
 
-task parseEnWikipediaManualOfStyle(type: com.anysoftkeyboard.tools.generatewordslist.GenerateWordsListTask) {
-    inputFile new File(project.getProjectDir(), "english_dictionary/Wikipedia_talk_Manual_of_Style.htm")
-    inputFileType = com.anysoftkeyboard.tools.generatewordslist.GenerateWordsListTask.InputFileType.Html
-    //Download the archive from https://dumps.wikimedia.org/other/static_html_dumps/current/simple/
-    outputWordsListFile new File(project.getProjectDir(), "english_dictionary/words_en_wikipedia_manual_of_style.xml")
-}
-
-task parseEnWikipediaJimboUser(type: com.anysoftkeyboard.tools.generatewordslist.GenerateWordsListTask) {
-    inputFile new File(project.getProjectDir(), "english_dictionary/Wikipedia_User_talk_Jimbo_Wales.htm")
-    inputFileType = com.anysoftkeyboard.tools.generatewordslist.GenerateWordsListTask.InputFileType.Html
-    //Download the archive from https://dumps.wikimedia.org/other/static_html_dumps/current/simple/
-    outputWordsListFile new File(project.getProjectDir(), "english_dictionary/words_en_wikipedia_jimbo.xml")
-}
-
-task parseEnWikipediaEnglishCivilWar(type: com.anysoftkeyboard.tools.generatewordslist.GenerateWordsListTask) {
-    inputFile new File(project.getProjectDir(), "english_dictionary/First_English_Civil_War_Wikipedia.htm")
-    inputFileType = com.anysoftkeyboard.tools.generatewordslist.GenerateWordsListTask.InputFileType.Html
-    //Download the archive from https://dumps.wikimedia.org/other/static_html_dumps/current/simple/
-    outputWordsListFile new File(project.getProjectDir(), "english_dictionary/words_en_wikipedia_civil_war.xml")
-}
 
 task mergeAllWordLists(type: com.anysoftkeyboard.tools.generatewordslist.MergeWordsListTask) {
-    dependsOn parseStateAssembly
-    dependsOn parseEnWikipediaManualOfStyle
-    dependsOn parseEnWikipediaJimboUser
-    dependsOn parseEnWikipediaEnglishCivilWar
-
+    dependsOn parseMedical
     inputWordsListFiles = [
-            new File(project.getProjectDir(), "english_dictionary/words.xml"),//legacy dictionary
-            new File(project.getProjectDir(), "english_dictionary/words_ny_state_assembly.xml"),
-            new File(project.getProjectDir(), "english_dictionary/popular_websites_words.xml"),//website I use most
-            new File(project.getProjectDir(), "english_dictionary/words_en_wikipedia_manual_of_style.xml"),
-            new File(project.getProjectDir(), "english_dictionary/words_en_wikipedia_civil_war.xml"),
-            new File(project.getProjectDir(), "english_dictionary/words_en_wikipedia_jimbo.xml")
+            new File(project.getProjectDir(), "english_dictionary/Medical_All.xml"),
+            new File(project.getProjectDir(), "english_dictionary/words_merged.xml")
             ] as File[]
-    outputWordsListFile new File(project.getProjectDir(), "english_dictionary/words_merged.xml")
+    outputWordsListFile new File(project.getProjectDir(), "english_dictionary/medical_words_merged.xml")
     maxWordsInList 100000
 
     wordsToDiscard = ['clubbing\'s', 'muggins\'s', 'olefin', 'cs\'s']
@@ -232,7 +214,8 @@ task mergeAllWordLists(type: com.anysoftkeyboard.tools.generatewordslist.MergeWo
 
 task makeEnglishDictionary(type: com.anysoftkeyboard.tools.makedictionary.MakeDictionaryTask) {
     dependsOn mergeAllWordLists
-    inputWordsListFile new File(project.getProjectDir(), "english_dictionary/words_merged.xml")
+    inputWordsListFile new File(project.getProjectDir(), "english_dictionary/medical_words_merged.xml")
+    resourcesFolder new File(project.getProjectDir(), "src/main/res/")
 }
 
 dependencies {
@@ -259,3 +242,14 @@ dependencies {
         transitive = true;
     }
 }
+
+
+
+
+
+//sourceSets.main {
+//        jniLibs.srcDir 'src/main/libs'
+//        jni.srcDirs = [] //disable automatic ndk-build call
+//    }
+
+
